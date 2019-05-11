@@ -9,12 +9,14 @@ import (
 )
 
 const (
-	boardWidth  = 50
-	boardHeight = 15
-	goldCount   = 10
+	boardWidth   = 50
+	boardHeight  = 15
+	sceneWelcome = 1
+	sceneGame    = 2
 )
 
 var (
+	scene int
 	point int
 	px    int
 	golds []*gold
@@ -27,6 +29,15 @@ type gold struct {
 	cd    int
 }
 
+//print string in the console
+func printTb(x, y int, fg, bg termbox.Attribute, msg string) {
+	for _, c := range msg {
+		termbox.SetCell(x, y, c, fg, bg)
+		x++
+	}
+}
+
+//move gold down from the sky
 func goldRainLoop() {
 	//init golds
 	golds = make([]*gold, boardWidth)
@@ -41,7 +52,7 @@ func goldRainLoop() {
 			g.y = -1
 		}
 	}
-	tick := time.NewTicker(300 * time.Millisecond)
+	tick := time.NewTicker(200 * time.Millisecond)
 	for {
 		select {
 		case <-tick.C:
@@ -62,7 +73,7 @@ func goldRainLoop() {
 						refreshScore()
 					}
 					g.y = -1
-					g.cd = rand.Intn(boardHeight << 2)
+					g.cd = rand.Intn(boardHeight * 5)
 					continue
 				}
 				termbox.SetCell(i, g.y, ' ', termbox.ColorYellow, termbox.ColorYellow)
@@ -71,6 +82,7 @@ func goldRainLoop() {
 		}
 	}
 }
+
 func movePlayer(delta int) {
 	if px == 0 && delta < 0 || px >= boardWidth && delta > 0 {
 		return
@@ -81,6 +93,7 @@ func movePlayer(delta int) {
 	termbox.Flush()
 }
 
+//when the point is changed, refresh scoreboard
 func refreshScore() {
 	x := boardWidth + 10
 	p := point
@@ -98,6 +111,28 @@ func refreshScore() {
 	termbox.Flush()
 }
 
+func welcomeScene() {
+	scene = sceneWelcome
+	printTb(15, 3, termbox.ColorYellow, termbox.ColorDefault, "Gold coin game")
+	printTb(8, 5, termbox.ColorBlue, termbox.ColorDefault, "yellow blocks are gold")
+	printTb(8, 6, termbox.ColorBlue, termbox.ColorDefault, "silver underscore is your plate")
+	printTb(8, 7, termbox.ColorBlue, termbox.ColorDefault, "press <- and -> to move the plate")
+	printTb(8, 8, termbox.ColorBlue, termbox.ColorDefault, "scores gain by catch gold with plate")
+	printTb(8, 9, termbox.ColorBlue, termbox.ColorDefault, "press 'q' or [ESC] to quit")
+	printTb(8, 10, termbox.ColorBlue, termbox.ColorDefault, "press any key to start game")
+	termbox.Flush()
+}
+
+func startGame() {
+	scene = sceneGame
+	px = boardWidth >> 1
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	termbox.SetCell(px, boardHeight, '_', termbox.ColorCyan, termbox.ColorDefault)
+	refreshScore()
+	go goldRainLoop()
+	termbox.Flush()
+}
+
 func main() {
 	//termbox
 	err := termbox.Init()
@@ -105,20 +140,17 @@ func main() {
 		panic(err)
 	}
 	defer termbox.Close()
-
-	px = boardWidth >> 1
-	termbox.SetCell(px, boardHeight, '_', termbox.ColorCyan, termbox.ColorDefault)
-	termbox.Flush()
-	refreshScore()
-	go goldRainLoop()
 	//input
 	termbox.SetInputMode(termbox.InputEsc)
+	welcomeScene()
 mainloop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Ch == 'q' || ev.Ch == 'Q' || ev.Key == termbox.KeyEsc {
 				break mainloop
+			} else if scene == sceneWelcome {
+				startGame()
 			} else if ev.Key == termbox.KeyArrowLeft {
 				movePlayer(-1)
 			} else if ev.Key == termbox.KeyArrowRight {
