@@ -1,0 +1,14 @@
+GO111MODULE=on go mod init github.com/gzllol/go-simple-demo/moduletest/a1
+GO111MODULE=on go mod init github.com/gzllol/go-simple-demo/moduletest/b1
+
+git tag v1.0.0
+git push --tag
+
+GO111MODULE=on go get -d github.com/gzllol/go-simple-demo/moduletest/a1@v1.0
+
+v1.0.0
+
+b1 v1.0.0 -> a1 v1.0.0
+a1/submod/b1 is within a1 module and is not a dependent module
+
+
