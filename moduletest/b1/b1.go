@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("b1 version: v1.0.0")
+	fmt.Println("b1 version: v1.1.0")
 	a1.A1()
 	b1.A1B1()
 }

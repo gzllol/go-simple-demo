@@ -4,11 +4,32 @@ GO111MODULE=on go mod init github.com/gzllol/go-simple-demo/moduletest/b1
 git tag v1.0.0
 git push --tag
 
-GO111MODULE=on go get -d github.com/gzllol/go-simple-demo/moduletest/a1@v1.0
+GO111MODULE=on go get -d github.com/gzllol/go-simple-demo/moduletest/a1@v1.0.0
+
+GO111MODULE=on go get -d github.com/gzllol/go-simple-demo@v1.0.0
+
 
 v1.0.0
 
 b1 v1.0.0 -> a1 v1.0.0
 a1/submod/b1 is within a1 module and is not a dependent module
 
+problems
 
+b1 Fri Apr 02 17:24:47 $ pwd
+/Users/zlgao/code/opensource/go-simple-demo/moduletest/b1
+
+b1 Fri Apr 02 17:24:49 $ cat go.mod
+module github.com/gzllol/go-simple-demo/moduletest/b1
+
+go 1.12
+
+require github.com/gzllol/go-simple-demo/moduletest/a1 v1.0.0
+
+b1 Fri Apr 02 17:24:52 $ go build
+go: finding github.com/gzllol/go-simple-demo/moduletest/a1 v1.0.0
+go: github.com/gzllol/go-simple-demo/moduletest/a1@v1.0.0: unknown revision moduletest/a1/v1.0.0
+go: error loading module requirements
+
+
+https://www.codenong.com/57806081/
